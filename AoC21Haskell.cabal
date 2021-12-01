@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      P01
   other-modules:
       Paths_AoC21Haskell
   hs-source-dirs:
@@ -50,6 +51,8 @@ test-suite AoC21Haskell-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      P01Spec
+      Puzzle01Data
       Paths_AoC21Haskell
   hs-source-dirs:
       test
@@ -57,4 +60,5 @@ test-suite AoC21Haskell-test
   build-depends:
       AoC21Haskell
     , base >=4.7 && <5
+    , hspec
   default-language: Haskell2010
