@@ -9,5 +9,3 @@ sums (a:b:c:xs) = (a+b+c:sums (b:c:xs))
 sums xs = [sum xs]
 
 windowIncreases = increases . sums
-
-

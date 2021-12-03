@@ -27,6 +27,8 @@ library
   exposed-modules:
       Lib
       P01
+      P02
+      P03
   other-modules:
       Paths_AoC21Haskell
   hs-source-dirs:
@@ -52,7 +54,11 @@ test-suite AoC21Haskell-test
   main-is: Spec.hs
   other-modules:
       P01Spec
+      P02Spec
+      P03Spec
       Puzzle01Data
+      Puzzle02Data
+      Puzzle03Data
       Paths_AoC21Haskell
   hs-source-dirs:
       test
