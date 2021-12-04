@@ -6,13 +6,12 @@ import Data.List ( find, transpose )
 type Number = (Integer,Bool)
 type Grid = [[Number]]
 data Bingo = Bingo { numbers :: [Integer],
-                     lastCalled :: Maybe Integer,
                      winners :: [(Int,Integer)],
                      grids :: [Grid] }
      deriving (Eq,Show)
 
 readBingo :: [String] -> Bingo
-readBingo ss = Bingo nums Nothing [] grds
+readBingo ss = Bingo nums [] grds
     where nums = read ("[" <> (head ss) <> "]")
           grds = readGrids (tail ss)
           readGrids :: [String] -> [Grid]
@@ -22,10 +21,9 @@ readBingo ss = Bingo nums Nothing [] grds
           readGrid = map (map ((\n -> (n,False)) . read) . words)
 
 draw :: Bingo -> Bingo
-draw bingo = Bingo numbers' lastCalled' winners' grids'
+draw bingo = Bingo numbers' winners' grids'
     where
         (n:numbers') = numbers bingo
-        lastCalled' = Just n
         winners' = winners bingo <> newWinner
         newWinner = [ (i,n) | i <- [0..length grids' -1]
                     , solved (grids'!!i)
@@ -52,14 +50,14 @@ solved grid = (any ((==line) . map snd) grid) || (any ((==line) . map snd) (tran
 solutionA :: Bingo -> Integer
 solutionA bingo = calledNumber * sumNonMarked winningGrid
     where
-        lastBingo = last (take (length (numbers bingo)) (iterate draw bingo))
+        lastBingo = drawAll bingo
         (firstWinner,calledNumber) = head (winners lastBingo)
         winningGrid = (grids lastBingo) !! firstWinner
-        
+
 solutionB :: Bingo -> Integer
 solutionB bingo = calledNumber * sumNonMarked winningGrid
     where
-        lastBingo = last (take (length (numbers bingo)) (iterate draw bingo))
+        lastBingo = drawAll bingo
         (lastWinner,calledNumber) = last (winners lastBingo)
         winningGrid = (grids lastBingo) !! lastWinner
 
@@ -71,3 +69,7 @@ winnerBingo bingo = find (\b -> winner b /= Nothing) bingos
 
 sumNonMarked :: Grid -> Integer
 sumNonMarked grid = sum (map fst (filter (not . snd) (concat grid)))
+
+drawAll :: Bingo -> Bingo
+drawAll bingo | allSolved bingo = bingo
+              | otherwise = drawAll (draw bingo)

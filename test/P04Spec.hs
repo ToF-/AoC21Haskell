@@ -30,7 +30,6 @@ spec = do
     describe "read bingo" $ do
         it "should read the input data from a list of strings" $ do
             numbers bingo `shouldBe` [7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1]
-            lastCalled bingo `shouldBe` Nothing
             (grids bingo) !! 0 `shouldBe`
                         [[(22,False),(13,False),(17,False),(11,False), (0,False)]
                         ,[ (8,False), (2,False),(23,False), (4,False),(24,False)]
@@ -47,7 +46,6 @@ spec = do
     describe "draw" $ do
         it "should mark the grids with the number drawn" $ do
             let bingo' = draw bingo
-            lastCalled bingo'  `shouldBe` Just 7
             numbers bingo' `shouldBe` tail (numbers bingo)
             (grids bingo') !! 0 `shouldBe`
                         [[(22,False),(13,False),(17,False),(11,False), (0,False)]
@@ -67,7 +65,6 @@ spec = do
             winner bingo `shouldBe` Nothing
             let bingos = iterate draw bingo
             let bingo' = last (take 13 bingos)
-            lastCalled bingo' `shouldBe` Just 24
             head (numbers bingo') `shouldBe` 10
             winner bingo' `shouldBe`
                Just [[(14,True ),(21,True ),(17,True ),(24,True ), (4,True )]
@@ -79,7 +76,6 @@ spec = do
             let newBingo = bingo { numbers = [22,8,21,6,1,7,4,9,5] }
             let newBingos = iterate draw newBingo
             let newBingo'' = last (take 6 newBingos)
-            lastCalled newBingo'' `shouldBe` Just 1
             winner newBingo'' `shouldBe`
                 Just [[(22,True ),(13,False),(17,False),(11,False), (0,False)]
                      ,[ (8,True ), (2,False),(23,False), (4,False),(24,False)]
@@ -87,21 +83,40 @@ spec = do
                      ,[ (6,True ),(10,False), (3,False),(18,False), (5,False)]
                      ,[ (1,True ),(12,False),(20,False),(15,False),(19,False)]]
 
+    describe "draw All" $ do
+        it "should draw numbers until all grid won" $ do
+            drawAll bingo `shouldBe`
+                Bingo { numbers = [6,15,25,12,22,18,20,8,19,3,26,1]
+                      , winners = [(2,24),(0,16),(1,13)]
+                      , grids = [[[(22,False),(13,False),(17,True ),(11,True ),( 0,True )]
+                                 ,[( 8,False),( 2,True ),(23,True ),( 4,True ),(24,True )]
+                                 ,[(21,True ),( 9,True ),(14,True ),(16,True ),( 7,True )]
+                                 ,[( 6,False),(10,True ),( 3,False),(18,False),( 5,True )]
+                                 ,[( 1,False),(12,False),(20,False),(15,False),(19,False)]]
+                                ,[[( 3,False),(15,False),( 0,True ),( 2,True ),(22,False)]
+                                 ,[( 9,True ),(18,False),(13,True ),(17,True ),( 5,True )]
+                                 ,[(19,False),( 8,False),( 7,True ),(25,False),(23,True )]
+                                 ,[(20,False),(11,True ),(10,True ),(24,True ),( 4,True )]
+                                 ,[(14,True ),(21,True ),(16,True ),(12,False),( 6,False)]]
+                                ,[[(14,True ),(21,True ),(17,True ),(24,True ),( 4,True )]
+                                 ,[(10,False),(16,False),(15,False),( 9,True ),(19,False)]
+                                 ,[(18,False),( 8,False),(23,True ),(26,False),(20,False)]
+                                 ,[(22,False),(11,True ),(13,False),( 6,False),( 5,True )]
+                                 ,[( 2,True ),( 0,True ),(12,False),( 3,False),( 7,True )]]]}
     describe "solution A" $ do
         describe "should multiply the last number called by the sum of non marked numbers of the winner" $ do
             it "should pass the sample" $ do
-                let bingos = iterate draw bingo
-                let bingo' = last (take 13 bingos)
-                lastCalled bingo' `shouldBe` Just 24
-                head (numbers bingo') `shouldBe` 10
-                winner bingo' `shouldBe`
-                   Just [[(14,True ),(21,True ),(17,True ),(24,True ), (4,True )]
-                        ,[(10,False),(16,False),(15,False), (9,True ),(19,False)]
-                        ,[(18,False), (8,False),(23,True ),(26,False),(20,False)]
-                        ,[(22,False),(11,True ),(13,False), (6,False), (5,True )]
-                        ,[ (2,True ), (0,True ),(12,False), (3,False), (7,True)]]
-                solutionA bingo' `shouldBe` 4512
-            it "should pass the sample" $ do
+                let lastBingo = drawAll bingo
+                head (winners lastBingo) `shouldBe` (2,24)
+                (grids lastBingo)!! 2 `shouldBe`
+                   [[(14,True ),(21,True ),(17,True ),(24,True ), (4,True )]
+                   ,[(10,False),(16,False),(15,False), (9,True ),(19,False)]
+                   ,[(18,False), (8,False),(23,True ),(26,False),(20,False)]
+                   ,[(22,False),(11,True ),(13,False), (6,False), (5,True )]
+                   ,[ (2,True ), (0,True ),(12,False), (3,False), (7,True)]]
+                solutionA bingo `shouldBe` 4512
+
+            it "should pass the puzzle" $ do
                 input <- readFile "Puzzle04Data.txt"
                 let bingo = readBingo (lines input)
                 solutionA bingo `shouldBe` 64084
