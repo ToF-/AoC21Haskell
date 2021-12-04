@@ -7,11 +7,12 @@ type Number = (Integer,Bool)
 type Grid = [[Number]]
 data Bingo = Bingo { numbers :: [Integer],
                      lastCalled :: Maybe Integer,
+                     winners :: [(Int,Integer)],
                      grids :: [Grid] }
      deriving (Eq,Show)
 
 readBingo :: [String] -> Bingo
-readBingo ss = Bingo nums Nothing grds
+readBingo ss = Bingo nums Nothing [] grds
     where nums = read ("[" <> (head ss) <> "]")
           grds = readGrids (tail ss)
           readGrids :: [String] -> [Grid]
@@ -21,10 +22,14 @@ readBingo ss = Bingo nums Nothing grds
           readGrid = map (map ((\n -> (n,False)) . read) . words)
 
 draw :: Bingo -> Bingo
-draw bingo = Bingo rest called grids'
+draw bingo = Bingo numbers' lastCalled' winners' grids'
     where
-        (n:rest) = numbers bingo
-        called = Just n
+        (n:numbers') = numbers bingo
+        lastCalled' = Just n
+        winners' = winners bingo <> newWinner
+        newWinner = [ (i,n) | i <- [0..length grids' -1]
+                    , solved (grids'!!i)
+                    , not (i `elem` (map fst (winners bingo)))]
         grids' = map (\grid -> if not (solved grid) then markGrid n grid else grid) (grids bingo)
 
 markGrid :: Integer -> Grid -> Grid
@@ -44,15 +49,19 @@ solved grid = (any ((==line) . map snd) grid) || (any ((==line) . map snd) (tran
     where
         line = [True,True,True,True,True]
 
-solutionA :: Bingo -> Maybe Integer
-solutionA bingo = (*) <$> a <*> b
+solutionA :: Bingo -> Integer
+solutionA bingo = calledNumber * sumNonMarked winningGrid
     where
-        a :: Maybe Integer
-        a = winnerBingo bingo >>= lastCalled
-        b = sumNonMarked <$> winnerGrid
-        winnerGrid :: Maybe Grid
-        winnerGrid = (winnerBingo bingo) >>= winner
-
+        lastBingo = last (take (length (numbers bingo)) (iterate draw bingo))
+        (firstWinner,calledNumber) = head (winners lastBingo)
+        winningGrid = (grids lastBingo) !! firstWinner
+        
+solutionB :: Bingo -> Integer
+solutionB bingo = calledNumber * sumNonMarked winningGrid
+    where
+        lastBingo = last (take (length (numbers bingo)) (iterate draw bingo))
+        (lastWinner,calledNumber) = last (winners lastBingo)
+        winningGrid = (grids lastBingo) !! lastWinner
 
 winnerBingo :: Bingo -> Maybe Bingo
 winnerBingo bingo = find (\b -> winner b /= Nothing) bingos

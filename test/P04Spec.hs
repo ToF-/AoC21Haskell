@@ -100,9 +100,38 @@ spec = do
                         ,[(18,False), (8,False),(23,True ),(26,False),(20,False)]
                         ,[(22,False),(11,True ),(13,False), (6,False), (5,True )]
                         ,[ (2,True ), (0,True ),(12,False), (3,False), (7,True)]]
-                solutionA bingo' `shouldBe` Just 4512
+                solutionA bingo' `shouldBe` 4512
             it "should pass the sample" $ do
                 input <- readFile "Puzzle04Data.txt"
                 let bingo = readBingo (lines input)
-                solutionA bingo `shouldBe` Just 64084
+                solutionA bingo `shouldBe` 64084
 
+    describe "a grid that won" $ do
+        it "should not mark numbers any more" $ do
+            let bingos = iterate draw bingo
+            let bingo13 = last (take 13 bingos)
+            (grids bingo13)!!2 `shouldBe`
+               [[(14,True ),(21,True ),(17,True ),(24,True ), (4,True )]
+               ,[(10,False),(16,False),(15,False), (9,True ),(19,False)]
+               ,[(18,False), (8,False),(23,True ),(26,False),(20,False)]
+               ,[(22,False),(11,True ),(13,False), (6,False), (5,True )]
+               ,[ (2,True ), (0,True ),(12,False), (3,False), (7,True)]]
+            let bingo24 = last (take 24 bingos)
+            (grids bingo24)!! 2  `shouldBe` (grids bingo13)!!2
+
+        it "is marked in the winner list" $ do
+            let bingos = iterate draw bingo
+            let lastBingo = last (take 24 bingos)
+            winners lastBingo `shouldBe` [(2,24),(0,16),(1,13)]
+
+    describe "solution B" $ do
+        describe "should multiply the last number called by the sum of non marked numbers of the last winner" $ do
+            it "should pass the sample" $ do
+                let bingos = iterate draw bingo
+                let bingo' = last (take 24 bingos)
+                solutionB bingo' `shouldBe` 1924
+
+            it "should pass the puzzle" $ do
+                input <- readFile "Puzzle04Data.txt"
+                let bingo = readBingo (lines input)
+                solutionB bingo `shouldBe` 12833
