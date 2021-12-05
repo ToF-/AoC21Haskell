@@ -30,12 +30,14 @@ library
       P02
       P03
       P04
+      P05
   other-modules:
       Paths_AoC21Haskell
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 executable AoC21Haskell-exe
@@ -48,6 +50,7 @@ executable AoC21Haskell-exe
   build-depends:
       AoC21Haskell
     , base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 test-suite AoC21Haskell-test
@@ -58,9 +61,11 @@ test-suite AoC21Haskell-test
       P02Spec
       P03Spec
       P04Spec
+      P05Spec
       Puzzle01Data
       Puzzle02Data
       Puzzle03Data
+      Puzzle05Data
       Paths_AoC21Haskell
   hs-source-dirs:
       test
@@ -68,5 +73,6 @@ test-suite AoC21Haskell-test
   build-depends:
       AoC21Haskell
     , base >=4.7 && <5
+    , containers
     , hspec
   default-language: Haskell2010
