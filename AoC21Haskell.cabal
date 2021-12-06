@@ -31,6 +31,7 @@ library
       P03
       P04
       P05
+      P06
   other-modules:
       Paths_AoC21Haskell
   hs-source-dirs:
@@ -62,6 +63,7 @@ test-suite AoC21Haskell-test
       P03Spec
       P04Spec
       P05Spec
+      P06Spec
       Puzzle01Data
       Puzzle02Data
       Puzzle03Data
