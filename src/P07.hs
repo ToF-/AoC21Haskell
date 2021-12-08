@@ -16,4 +16,4 @@ minimumFuel' ps = minimum (map fuel [minX..maxX])
         fuel x = sum (map (\n -> consumption (abs (x-n))) ps)
 
         consumption 0 = 0
-        consumption x = sum [0..x]
+        consumption x = (x * (x+1)) `div` 2
