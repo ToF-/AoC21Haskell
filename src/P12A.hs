@@ -1,4 +1,4 @@
-module P12
+module P12A
     where
 
 import qualified Data.Map as M
@@ -40,6 +40,7 @@ continue g p = case M.lookup (head p) g of
                  Just cs -> L.map (\c -> c:p) (L.filter visitable cs)
                     where
                         visitable (Big _) = True
+                        visitable (Small "start") = False
                         visitable c = not (c `elem` p)
 
 continuePaths :: Graph -> [Path] -> [Path]

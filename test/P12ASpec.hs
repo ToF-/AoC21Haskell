@@ -1,8 +1,8 @@
-module P12Spec
+module P12ASpec
     where
 
 import Test.Hspec
-import P12
+import P12A
 import qualified Data.Map as M
 
 sample = ["start-A"
