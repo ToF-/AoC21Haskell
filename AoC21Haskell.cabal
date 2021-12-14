@@ -39,6 +39,7 @@ library
       P12A
       P12B
       P13
+      P14
   other-modules:
       Paths_AoC21Haskell
   hs-source-dirs:
@@ -79,6 +80,7 @@ test-suite AoC21Haskell-test
       P12ASpec
       P12BSpec
       P13Spec
+      P14Spec
       Puzzle01Data
       Puzzle02Data
       Puzzle03Data
