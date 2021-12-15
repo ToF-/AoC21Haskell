@@ -85,3 +85,20 @@ aSample = ["1163751742"
           ,"1293138521"
           ,"2311944581"]
 
+increase :: String -> String
+increase s = map (\c -> if c == '9' then '1' else succ c) s
+
+extended :: [String] -> [String]
+extended ss = let
+                ext1 = map increase ss
+                ext2 = map increase ext1
+                ext3 = map increase ext2
+                ext4 = map increase ext3
+                join :: [String] -> [String] -> [String]
+                join as bs = zipWith (<>) as bs
+                extrow = ss `join` ext1 `join` ext2 `join` ext3 `join` ext4  
+                extrow1 = map increase extrow
+                extrow2 = map increase extrow1
+                extrow3 = map increase extrow2
+                extrow4 = map increase extrow3
+              in extrow <> extrow1 <> extrow2 <> extrow3 <> extrow4
