@@ -1,0 +1,25 @@
+rules :
+
+BB -> N
+BC -> B
+BH -> H
+BN -> B
+CB -> H
+CC -> N
+CH -> B
+CN -> C
+HB -> C
+HC -> B
+HH -> N
+HN -> C
+NB -> B
+NC -> B
+NH -> C
+NN -> C
+
+initial = NNCB = 1NN+1NC-1N+1CB-1C
+step 1 = NCNBCHB = 1(1NC+1CN-1C)+1(1NB+1BC-1B)-1N+1(1CH+1HB-1H)-1C = 2B+2C+1H+2N
+step 2 = NBCCNBBBCBHCB = 1(1(1NB+1BC-1B)+1(1CC+1CN-1C)-1C)+1(1(1NB+1BB-1B)+1(1BB+1BC-1B)-1B)-1N+1(1(1CB+1BH-1B)+1(1HC+1CB-1C)-1H)-1C = -4B-3C-1H+2BB+2BC+1BH+2CB+1CC+1CN+1HC+2NB = +5B+5C+1H+3N =
+
+
+

@@ -3,6 +3,9 @@ module P14Spec
 
 import Test.Hspec
 import P14
+import P14Puzzle
+import qualified Data.Map as M
+import qualified Data.List as L
 
 
 sample = [("CH",'B')
@@ -22,118 +25,18 @@ sample = [("CH",'B')
          ,("CC",'N')
          ,("CN",'C')]
 
-initial= "OHFNNCKCVOBHSSHONBNF"
+gs = L.sort . L.map (\g -> (head g, length g)) . L.group . L.sort
 
-puzzle = [("SV",'O')
-         ,("KP",'H')
-         ,("FP",'B')
-         ,("VP",'V')
-         ,("KN",'S')
-         ,("KS",'O')
-         ,("SB",'K')
-         ,("BS",'K')
-         ,("OF",'O')
-         ,("ON",'S')
-         ,("VS",'F')
-         ,("CK",'C')
-         ,("FB",'K')
-         ,("CH",'K')
-         ,("HS",'H')
-         ,("PO",'F')
-         ,("NP",'N')
-         ,("FH",'C')
-         ,("FO",'O')
-         ,("FF",'C')
-         ,("CO",'K')
-         ,("NB",'V')
-         ,("PP",'S')
-         ,("BB",'N')
-         ,("HH",'B')
-         ,("KK",'H')
-         ,("OP",'K')
-         ,("OS",'V')
-         ,("KV",'F')
-         ,("VH",'F')
-         ,("OB",'S')
-         ,("CN",'H')
-         ,("SF",'K')
-         ,("SN",'P')
-         ,("NF",'H')
-         ,("HB",'V')
-         ,("VC",'S')
-         ,("PS",'P')
-         ,("NK",'B')
-         ,("CV",'P')
-         ,("BC",'S')
-         ,("NH",'K')
-         ,("FN",'P')
-         ,("SH",'F')
-         ,("FK",'P')
-         ,("CS",'O')
-         ,("VV",'H')
-         ,("OC",'F')
-         ,("CC",'N')
-         ,("HK",'N')
-         ,("FS",'P')
-         ,("VF",'B')
-         ,("SS",'V')
-         ,("PV",'V')
-         ,("BF",'V')
-         ,("OV",'C')
-         ,("HO",'F')
-         ,("NC",'F')
-         ,("BN",'F')
-         ,("HC",'N')
-         ,("KO",'P')
-         ,("KH",'F')
-         ,("BV",'S')
-         ,("SK",'F')
-         ,("SC",'F')
-         ,("VN",'V')
-         ,("VB",'V')
-         ,("BH",'O')
-         ,("CP",'K')
-         ,("PK",'K')
-         ,("PB",'K')
-         ,("FV",'S')
-         ,("HN",'K')
-         ,("PH",'B')
-         ,("VK",'B')
-         ,("PC",'H')
-         ,("BO",'H')
-         ,("SP",'V')
-         ,("NS",'B')
-         ,("OH",'N')
-         ,("KC",'H')
-         ,("HV",'F')
-         ,("HF",'B')
-         ,("HP",'S')
-         ,("CB",'P')
-         ,("PN",'S')
-         ,("BK",'K')
-         ,("PF",'N')
-         ,("SO",'P')
-         ,("CF",'B')
-         ,("VO",'C')
-         ,("OO",'K')
-         ,("FC",'F')
-         ,("NV",'F')
-         ,("OK",'K')
-         ,("NN",'O')
-         ,("NO",'O')
-         ,("BP",'O')
-         ,("KB",'O')
-         ,("KF",'O')]
 spec :: SpecWith ()
 spec = do
     describe "step" $ do
         it "insert elements according tp pair insertion rules" $ do
-            step sample "NNCB" `shouldBe` "NCNBCHB" 
+            step sample "NNCB" `shouldBe` "NCNBCHB"
 
 
     describe "afterStep" $ do
         it "execute n steps of insertion process" $ do
-            afterStep "NNCB" sample 1 `shouldBe` step sample "NNCB" 
+            afterStep "NNCB" sample 1 `shouldBe` step sample "NNCB"
             afterStep "NNCB" sample 4 `shouldBe` "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"
 
     describe "leastAndMostCommon" $ do
@@ -145,4 +48,37 @@ spec = do
             (l,m) `shouldBe` (706,3296)
             m-l `shouldBe`  2590
 
+    describe "initialCounter" $ do
+        it "make a counter of the initial template" $ do
+            let c = initialCounter "NNCB" 
+            (L.sort . M.toList) c `shouldBe` [("B",0),("C",-1),("CB",1),("N",-1),("NC",1),("NN",1)]
+            (L.sort . M.toList) (separate c) `shouldBe`[('B',1),('C',1),('N',2)]
+
+    describe "stepCounter" $ do
+        it "updates a counter according to the rules" $ do
+            let c = initialCounter "NNCB"
+                r = stepCounter sample c
+                s = stepCounter sample r
+            (L.sort . M.toList) r `shouldBe` [("B",-1),("BC",1),("C",-2),("CH",1),("CN",1),("H",-1),("HB",1),("N",-1),("NB",1),("NC",1)]
+                
+            (L.sort . M.toList) (separate r)`shouldBe` [('B',2),('C',2),('H',1),('N',2)]  
+            (L.sort . M.toList) (separate r)`shouldBe` gs "NCNBCHB"
+            (L.sort . M.toList) (separate s)`shouldBe` gs "NBCCNBBBCBHCB"
+
+    describe "afterStepCounter" $ do
+        it "execute n steps of insertion process" $ do
+            let r = afterStepCounter "NNCB" sample 1 
+            let s = afterStepCounter "NNCB" sample 4 
+            (L.sort . M.toList) (separate r) `shouldBe` gs "NCNBCHB"
+            (L.sort . M.toList) (separate s) `shouldBe` gs "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"
+
+
+    describe "leastAndMostCommonCounter" $ do
+        it "tells the quantity of the least and most common elements in a template" $ do
+            leastAndMostCommonCounter (afterStepCounter "NNCB" sample 10) `shouldBe` ((161,'H'),(1749,'B'))
+
+        it "should solve the puzzle" $ do
+            leastAndMostCommonCounter (afterStepCounter initial puzzle 10) `shouldBe` ((706,'N'),(3296,'F'))
+            leastAndMostCommonCounter (afterStepCounter initial puzzle 40) `shouldBe` ((802701318456,'N'),(3678366520894,'F'))
+            3678366520894 - 802701318456 `shouldBe` 2875665202438
 

@@ -80,6 +80,7 @@ test-suite AoC21Haskell-test
       P12ASpec
       P12BSpec
       P13Spec
+      P14Puzzle
       P14Spec
       Puzzle01Data
       Puzzle02Data
