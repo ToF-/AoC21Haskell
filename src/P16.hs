@@ -15,7 +15,7 @@ data Value = Value Int Int
     deriving (Eq, Show)
 
 data Packet = LiteralValue Version Value
-            | Operator Version LengthMode [Packet]
+            | Operator Int Version LengthMode [Packet]
     deriving (Eq, Show) 
 
 
@@ -69,15 +69,15 @@ lengthMode = lenMode . drop 6
 
 packetLength :: Packet -> Int
 packetLength (LiteralValue _ (Value n _)) = n
-packetLength (Operator _ (TotalLength n) _) = 22 + n
-packetLength (Operator _ (NbSubPackets n) ps) = 18 + sum (map packetLength ps)
+packetLength (Operator _ _ (TotalLength n) _) = 22 + n
+packetLength (Operator _ _ (NbSubPackets n) ps) = 18 + sum (map packetLength ps)
 
 packet :: Binary -> Packet
 packet b = case typeId b of
              4 -> LiteralValue (version b) (value b)
              _ -> case (lengthMode b) of
-                    (TotalLength n) -> Operator (version b) (TotalLength n) (packetsForLength n (drop 22 b))
-                    (NbSubPackets n) -> Operator (version b) (NbSubPackets n) (packetsForCount n (drop 18 b))
+                    (TotalLength n) -> Operator (typeId b) (version b) (TotalLength n) (packetsForLength n (drop 22 b))
+                    (NbSubPackets n) -> Operator (typeId b) (version b) (NbSubPackets n) (packetsForCount n (drop 18 b))
 
 packetsForLength :: Int -> Binary -> [Packet]
 packetsForLength 0 _ = []
@@ -95,4 +95,14 @@ packetsForCount n b = p : packetsForCount (n-1) (drop l b)
 
 versionSum :: Packet -> Int
 versionSum (LiteralValue (Version n) _) = n
-versionSum (Operator (Version n) _ ps) = n + sum (map versionSum ps)
+versionSum (Operator _ (Version n) _ ps) = n + sum (map versionSum ps)
+
+compute :: Packet -> Int
+compute (LiteralValue _ (Value _ v)) = v
+compute (Operator 0 _ _ ps) = sum (map compute ps)
+compute (Operator 1 _ _ ps) = product (map compute ps)
+compute (Operator 2 _ _ ps) = minimum (map compute ps)
+compute (Operator 3 _ _ ps) = maximum (map compute ps)
+compute (Operator 5 _ _ ps) = if compute (head ps) > compute (head (tail ps)) then 1 else 0
+compute (Operator 6 _ _ ps) = if compute (head ps) < compute (head (tail ps)) then 1 else 0
+compute (Operator 7 _ _ ps) = if compute (head ps) == compute (head (tail ps)) then 1 else 0
