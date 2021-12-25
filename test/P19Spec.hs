@@ -170,14 +170,35 @@ spec = do
             let result = assemble scanner0 scanner1
             length result `shouldBe` length scanner0 + length scanner1 - length (commonPoints scanner0 scanner1 11) 
 
-    describe "merge program" $ do
-        it "tell all the assemblies to make" $ do
-            mergeProgram 5  `shouldBe` [[(0,1),(0,2),(0,3),(0,4)],[(1,2),(1,3),(1,4)],[(2,3),(2,4)],[(3,4)]]
+    describe "findPosition" $ do
+        it "find the position and rotation of a scanner from a scanner" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            findPosition sample 0 0  `shouldBe` Just (Position {from = 0, to = 0, tr = (0,0,0), rot = [[1,0,0],[0,1,0],[0,0,1]]})
+            findPosition sample 0 1 `shouldBe` 
+                Just (Position { from = 0, to = 1, tr = (68,-1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]] })
+            findPosition sample 1 4 `shouldBe` 
+                Just (Position {from = 1, to = 4, tr = (88,113,-1104), rot = [[0,0,-1],[1,0,0],[0,-1,0]]})  
+            map (findPosition sample 0) [1..4] `shouldBe`
+                [Just (Position {from = 0, to = 1, tr = (68,-1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]]}),Nothing,Nothing,Nothing]
+            map (findPosition sample 1) [2..4] `shouldBe`
+                [Nothing,Just (Position {from = 1, to = 3, tr = (160,-1134,-23), rot = [[1,0,0],[0,1,0],[0,0,1]]}),Just (Position {from = 1, to = 4, tr = (88,113,-1104), rot = [[0,0,-1],[1,0,0],[0,-1,0]]})]  
+            map (findPosition sample 2) [3..4] `shouldBe`
+                [Nothing,Just (Position {from = 2, to = 4, tr = (1125,-168,72), rot = [[0,1,0],[1,0,0],[0,0,-1]]})]
+            map (findPosition sample 3) [4] `shouldBe`
+                [Nothing]
+    describe "findAllPositions" $ do
+        it "find all the relative positions of scanners" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            findAllPositions sample `shouldBe` 
+                [Position {from = 0, to = 1, tr = (68,-1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]]}
+                ,Position {from = 1, to = 0, tr = (68,1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]]}
+                ,Position {from = 1, to = 3, tr = (160,-1134,-23), rot = [[1,0,0],[0,1,0],[0,0,1]]}
+                ,Position {from = 1, to = 4, tr = (88,113,-1104), rot = [[0,0,-1],[1,0,0],[0,-1,0]]}
+                ,Position {from = 2, to = 4, tr = (1125,-168,72), rot = [[0,1,0],[1,0,0],[0,0,-1]]}
+                ,Position {from = 3, to = 1, tr = (-160,1134,23), rot = [[1,0,0],[0,1,0],[0,0,1]]}
+                ,Position {from = 4, to = 1, tr = (-1104,-88,113), rot = [[0,1,0],[0,0,-1],[-1,0,0]]}
+                ,Position {from = 4, to = 2, tr = (168,-1125,72), rot = [[0,1,0],[1,0,0],[0,0,-1]]}]
 
-    describe "merge" $ do
-        it "merge assembled scanners according to merge program" $ do
-            let result = mergeAll (map (map point) sampleScanners)
-            length result `shouldBe` 79
 
     describe "readScanners" $ do
         it "convert lines into a list of scanners" $ do 
@@ -197,13 +218,10 @@ spec = do
             head (head scs) `shouldBe` point (404,-588,-901)  
             last (last scs) `shouldBe` point (-447,-329,318)
 
-    describe "all of this" $ do
-        it "should pass the puzzle part A" $ do
+        it "should read the puzzle data" $ do
             content <- lines <$> readFile "test/Puzzle19Data.txt"
             let puzzle = readScanners content
             length puzzle `shouldBe` 34 
             head (head puzzle) `shouldBe` point (562,-830,765) 
             last (last puzzle) `shouldBe` point (682,-518,447) 
-            let result = mergeAll puzzle
-            length result `shouldBe` 0 
         

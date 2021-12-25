@@ -2,6 +2,7 @@ module P19
     where
 
 import Data.List
+import Data.Maybe
 
 type Signature = [Integer]
 type Scanner = [Point]
@@ -11,6 +12,12 @@ data Point = Point { x :: Integer, y :: Integer, z :: Integer }
     deriving (Eq,Show,Ord)
 
 type Rotation = [[Integer]]
+
+data Position = Position { from :: Int
+                         , to :: Int
+                         , tr :: Coords
+                         , rot :: Rotation }
+    deriving (Eq,Show,Ord)
 
 point :: Coords -> Point
 point (a,b,c) = Point { x = a, y = b, z = c }
@@ -176,6 +183,16 @@ assemble sc0 sc1 = let
                          Just (t,r) -> nub (sort (sc0 <> sc1'))
                             where
                                 sc1' = map ((flip translate t).(flip rotate r)) sc1
+
+findPosition :: [Scanner] -> Int -> Int -> Maybe Position
+findPosition scs a b = result <$> findHomogen (commonPoints (scs!!a) (scs!!b) 11)
+    where
+        result (t,r) = Position { from = a, to = b, tr = t, rot = r }
+
+findAllPositions :: [Scanner] -> [Position]
+findAllPositions scs = catMaybes $ [findPosition scs a b | a <- [0..n], b <- [0..n], a /= b]
+    where n = length scs - 1
+
 merge :: [Scanner] -> [[Point]]
 merge scs = map (nub . sort . concatMap (\(a,b) -> assemble (scs!!a) (scs!!b))) $ mergeProgram (length scs) 
 
