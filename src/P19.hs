@@ -19,6 +19,9 @@ type Rotation = [[Integer]]
 point :: Coord -> Point
 point (a,b,c) = Point { x = a, y = b, z = c, distances = S.empty }
 
+coord :: Point -> Coord
+coord p = (x p, y p, z p)
+
 distance :: Point -> Point -> Distance
 distance p1 p2 = dx2 + dy2 + dz2
     where
@@ -50,29 +53,51 @@ rotate [[d,e,f],[g,h,i],[j,k,l]] (a,b,c) = (m,n,o)
         o = a * f + b * i + c * l 
 
 rotations :: Coord -> [Coord]
-rotations c = map (flip rotate c) rs
-    where
-        rs = [[[ 1, 0, 0] ,[ 0, 1, 0] ,[ 0, 0, 1]]
-             ,[[ 1, 0, 0] ,[ 0, 0,-1] ,[ 0, 1, 0]]
-             ,[[ 1, 0, 0] ,[ 0,-1, 0] ,[ 0, 0,-1]]
-             ,[[ 1, 0, 0] ,[ 0, 0, 1] ,[ 0,-1, 0]]
-             ,[[ 0,-1, 0] ,[ 1, 0, 0] ,[ 0, 0, 1]]
-             ,[[ 0, 0, 1] ,[ 1, 0, 0] ,[ 0, 1, 0]]
-             ,[[ 0, 1, 0] ,[ 1, 0, 0] ,[ 0, 0,-1]]
-             ,[[ 0, 0,-1] ,[ 1, 0, 0] ,[ 0,-1, 0]]
-             ,[[ 1, 0, 0] ,[ 0,-1, 0] ,[ 0, 0, 1]]
-             ,[[-1, 0, 0] ,[ 0, 0,-1] ,[ 0,-1, 0]]
-             ,[[-1, 0, 0] ,[ 0, 1, 0] ,[ 0, 0,-1]]
-             ,[[-1, 0, 0] ,[ 0, 0, 1] ,[ 0, 1, 0]]
-             ,[[ 0, 1, 0] ,[-1, 0, 0] ,[ 0, 0, 1]]
-             ,[[ 0, 0, 1] ,[-1, 0, 0] ,[ 0,-1, 0]]
-             ,[[ 0,-1, 0] ,[-1, 0, 0] ,[ 0, 0,-1]]
-             ,[[ 0, 0,-1] ,[-1, 0, 0] ,[ 0, 1, 0]]
-             ,[[ 0, 0,-1] ,[ 0, 1, 0] ,[ 1, 0, 0]]
-             ,[[ 0, 1, 0] ,[ 0, 0, 1] ,[ 1, 0, 0]]
-             ,[[ 0, 0, 1] ,[ 0,-1, 0] ,[ 1, 0, 0]]
-             ,[[ 0,-1, 0] ,[ 0, 0,-1] ,[ 1, 0, 0]]
-             ,[[ 0, 0,-1] ,[ 0,-1, 0] ,[-1, 0, 0]]
-             ,[[ 0,-1, 0] ,[ 0, 0, 1] ,[-1, 0, 0]]
-             ,[[ 0, 0, 1] ,[ 0, 1, 0] ,[-1, 0, 0]]
-             ,[[ 0, 1, 0] ,[ 0, 0,-1] ,[-1, 0, 0]]]
+rotations c = map (flip rotate c) allRotations
+
+allRotations :: [Rotation]
+allRotations = [[[ 1, 0, 0] ,[ 0, 1, 0] ,[ 0, 0, 1]]
+               ,[[ 1, 0, 0] ,[ 0, 0,-1] ,[ 0, 1, 0]]
+               ,[[ 1, 0, 0] ,[ 0,-1, 0] ,[ 0, 0,-1]]
+               ,[[ 1, 0, 0] ,[ 0, 0, 1] ,[ 0,-1, 0]]
+               ,[[ 0,-1, 0] ,[ 1, 0, 0] ,[ 0, 0, 1]]
+               ,[[ 0, 0, 1] ,[ 1, 0, 0] ,[ 0, 1, 0]]
+               ,[[ 0, 1, 0] ,[ 1, 0, 0] ,[ 0, 0,-1]]
+               ,[[ 0, 0,-1] ,[ 1, 0, 0] ,[ 0,-1, 0]]
+               ,[[ 1, 0, 0] ,[ 0,-1, 0] ,[ 0, 0, 1]]
+               ,[[-1, 0, 0] ,[ 0, 0,-1] ,[ 0,-1, 0]]
+               ,[[-1, 0, 0] ,[ 0, 1, 0] ,[ 0, 0,-1]]
+               ,[[-1, 0, 0] ,[ 0, 0, 1] ,[ 0, 1, 0]]
+               ,[[ 0, 1, 0] ,[-1, 0, 0] ,[ 0, 0, 1]]
+               ,[[ 0, 0, 1] ,[-1, 0, 0] ,[ 0,-1, 0]]
+               ,[[ 0,-1, 0] ,[-1, 0, 0] ,[ 0, 0,-1]]
+               ,[[ 0, 0,-1] ,[-1, 0, 0] ,[ 0, 1, 0]]
+               ,[[ 0, 0,-1] ,[ 0, 1, 0] ,[ 1, 0, 0]]
+               ,[[ 0, 1, 0] ,[ 0, 0, 1] ,[ 1, 0, 0]]
+               ,[[ 0, 0, 1] ,[ 0,-1, 0] ,[ 1, 0, 0]]
+               ,[[ 0,-1, 0] ,[ 0, 0,-1] ,[ 1, 0, 0]]
+               ,[[ 0, 0,-1] ,[ 0,-1, 0] ,[-1, 0, 0]]
+               ,[[ 0,-1, 0] ,[ 0, 0, 1] ,[-1, 0, 0]]
+               ,[[ 0, 0, 1] ,[ 0, 1, 0] ,[-1, 0, 0]]
+               ,[[ 0, 1, 0] ,[ 0, 0,-1] ,[-1, 0, 0]]]
+
+translation :: Coord -> Coord -> Coord
+translation (x0,y0,z0) (x1,y1,z1) = (x0-x1,y0-y1,z0-z1)
+
+translate :: Coord -> Coord -> Coord
+translate (x0,y0,z0) (x1,y1,z1) = (x0+x1,y0+y1,z0+z1)
+
+intersection :: Scanner -> Scanner -> [(Coord,Coord)]
+intersection ps qs = [(coord p, coord q) | p <- ps, q <- qs, S.size (distances p `S.intersection` distances q) >= 11]
+
+findPosition :: Scanner -> Scanner -> Maybe (Coord,Rotation)
+findPosition ps qs = case intersection ps qs of
+                       [] -> Nothing
+                       pairs -> findPosition' pairs
+    where 
+        findPosition' :: [(Coord,Coord)] -> Maybe (Coord,Rotation)
+        findPosition' pairs = head <$> L.find isHomogen (map (\r -> [(translation p (rotate r q),r)| (p,q) <- pairs]) allRotations)
+
+        isHomogen :: [(Coord,Rotation)] -> Bool
+        isHomogen = (1==) . L.length . L.group . L.sort . L.map fst
+
