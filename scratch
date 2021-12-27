@@ -1,0 +1,474 @@
+    describe "distance" $ do
+        it "tell the distance between 2 points in space" $ do
+            let p1 = point (2, 3, 1)
+            let p2 = point (8,-5, 0)
+            abs (distance p1 p2 - 10.05) < 0.01 `shouldBe` True 
+
+    describe "signature" $ do
+        it "tell the distance from a point to all other points in the scanner range" $ do
+            let p1 = point (2,3,1)
+            let pts = map point [(8,-5,0),(4,2,-10),(-3,7,18)]
+            signature p1 pts `shouldBe` [100499,112250,181659]
+
+    describe "report" $ do
+        it "tell all the points and their signatures from a scanner" $ do
+            let scanner0 = map point [(2,3,1),(8,-5,0),(4,2,-10),(-3,7,18)]
+            let r0 = report scanner0
+            r0 `shouldBe`
+                [(Point {x = 2, y = 3, z = 1},[100499,112250,181659])
+                ,(Point {x = 8, y = -5, z = 0},[100499,128452,242693])
+                ,(Point {x = 4, y = 2, z = -10},[112250,128452,292916])
+                ,(Point {x = -3, y = 7, z = 18},[181659,242693,292916])]
+
+            let scanner1 = map point [(42,3,17),(22,-2,11),(28,0,10),(24,-3,0),(17,2,28),(19,-28,7)]
+            let r1 = report scanner1
+            r1 `shouldBe`
+                [(Point {x = 42, y = 3, z = 17},[159374,214709,254755,273313,398748])
+                ,(Point {x = 22, y = -2, z = 11},[64031,112250,181659,214709,264764])
+                ,(Point {x = 28, y = 0, z = 10},[64031,111803,159374,211896,295635])
+                ,(Point {x = 24, y = -3, z = 0},[111803,112250,254755,264386,292916])
+                ,(Point {x = 17, y = 2, z = 28},[181659,211896,273313,292916,366742])
+                ,(Point {x = 19, y = -28, z = 7},[264386,264764,295635,366742,398748])]      
+    describe "commonPoints" $ do
+        it "tell the points from two reports with a certain number of distances they have in common in their signature" $ do
+            let scanner0 = map point [(17,-3,5),(2,3,1),(8,-5,0),(4,2,-10),(-3,7,18)]
+            let scanner1 = map point [(42,3,17),(22,-2,11),(28,0,10),(24,-3,0),(17,2,28),(19,-28,7)]
+            commonPoints scanner0 scanner1 2 `shouldBe` 
+                [(Point {x = 2, y = 3, z = 1},Point {x = 22, y = -2, z = 11})
+                ,(Point {x = 4, y = 2, z = -10},Point {x = 24, y = -3, z = 0})
+                ,(Point {x = -3, y = 7, z = 18},Point {x = 17, y = 2, z = 28})]
+        it "should pass the sample" $ do
+            let scanner0 = map point (sampleScanners !! 0)
+            let scanner1 = map point (sampleScanners !! 1)
+            (commonPoints scanner0 scanner1 11) `shouldBe`
+                [(Point {x = 404, y = -588, z = -901},Point {x = -336, y = 658, z = 858})
+                ,(Point {x = 528, y = -643, z = 409},Point {x = -460, y = 603, z = -452})
+                ,(Point {x = 390, y = -675, z = -793},Point {x = -322, y = 571, z = 750})
+                ,(Point {x = -537, y = -823, z = -458},Point {x = 605, y = 423, z = 415})
+                ,(Point {x = -485, y = -357, z = 347},Point {x = 553, y = 889, z = -390})
+                ,(Point {x = -345, y = -311, z = 381},Point {x = 413, y = 935, z = -424})
+                ,(Point {x = -661, y = -816, z = -575},Point {x = 729, y = 430, z = 532})
+                ,(Point {x = -618, y = -824, z = -621},Point {x = 686, y = 422, z = 578})
+                ,(Point {x = -447, y = -329, z = 318},Point {x = 515, y = 917, z = -361})
+                ,(Point {x = 544, y = -627, z = -890},Point {x = -476, y = 619, z = 847})
+                ,(Point {x = 423, y = -701, z = 434},Point {x = -355, y = 545, z = -477})
+                ,(Point {x = 459, y = -707, z = 401},Point {x = -391, y = 539, z = -444})]   
+    describe "rotate" $ do
+        it "rotate a point" $ do
+            let p = point (34, 2, 18)
+            (p `rotate` (rotations !! 0))`shouldBe` point ( 34, 2, 18)
+    describe "rotateCommonPoints" $ do
+        it "rotate all the second points of a list of common points" $ do
+            let scanner0 = map point (sampleScanners !! 0)
+            let scanner1 = map point (sampleScanners !! 1)
+            (rotateCommonPoints (commonPoints scanner0 scanner1 11) (rotations!!4)) `shouldBe`
+                [(Point {x = 404, y = -588, z = -901},Point {x = 658, y = 336, z = 858})
+                ,(Point {x = 528, y = -643, z = 409},Point {x = 603, y = 460, z = -452})
+                ,(Point {x = 390, y = -675, z = -793},Point {x = 571, y = 322, z = 750})
+                ,(Point {x = -537, y = -823, z = -458},Point {x = 423, y = -605, z = 415})
+                ,(Point {x = -485, y = -357, z = 347},Point {x = 889, y = -553, z = -390})
+                ,(Point {x = -345, y = -311, z = 381},Point {x = 935, y = -413, z = -424})
+                ,(Point {x = -661, y = -816, z = -575},Point {x = 430, y = -729, z = 532})
+                ,(Point {x = -618, y = -824, z = -621},Point {x = 422, y = -686, z = 578})
+                ,(Point {x = -447, y = -329, z = 318},Point {x = 917, y = -515, z = -361})
+                ,(Point {x = 544, y = -627, z = -890},Point {x = 619, y = 476, z = 847})
+                ,(Point {x = 423, y = -701, z = 434},Point {x = 545, y = 355, z = -477})
+                ,(Point {x = 459, y = -707, z = 401},Point {x = 539, y = 391, z = -444})]
+    describe "translation" $ do
+        it "tell the difference between two points coordinates relatively" $ do
+            translation (point (404,-588,-901)) (point (658,336,858)) `shouldBe` (404-658,-588-336,-901-858) 
+
+    describe "isHomogen" $ do
+        it "tell if a rotation yields the same translation for all common points" $ do
+                let cps = [(Point {x = 2, y = 3, z = 1},Point {x = 22, y = -2, z = 11})
+                          ,(Point {x = 4, y = 2, z = -10},Point {x = 24, y = -3, z = 0})
+                          ,(Point {x = -3, y = 7, z = 18},Point {x = 17, y = 2, z = 28})]
+                isHomogen (cps, rotations!!0) `shouldBe` True 
+                isHomogen (rotateCommonPoints cps (rotations!!4), rotations!!4) `shouldBe` False 
+
+    describe "allRotations" $ do
+        it "is the list of all possible rotations" $ do
+            let p = point (42, 17, -23)
+            let ps = map (rotate p) rotations
+            ps `shouldBe` [Point {x = 42, y = 17, z = -23}
+                          ,Point {x = 42, y = -23, z = -17}
+                          ,Point {x = 42, y = -17, z = 23}
+                          ,Point {x = 42, y = 23, z = 17}
+                          ,Point {x = 17, y = -42, z = -23}
+                          ,Point {x = 17, y = -23, z = 42}
+                          ,Point {x = 17, y = 42, z = 23}
+                          ,Point {x = 17, y = 23, z = -42}
+                          ,Point {x = 42, y = -17, z = -23}
+                          ,Point {x = -42, y = 23, z = -17}
+                          ,Point {x = -42, y = 17, z = 23}
+                          ,Point {x = -42, y = -23, z = 17}
+                          ,Point {x = -17, y = 42, z = -23}
+                          ,Point {x = -17, y = 23, z = 42}
+                          ,Point {x = -17, y = -42, z = 23}
+                          ,Point {x = -17, y = -23, z = -42}
+                          ,Point {x = -23, y = 17, z = -42}
+                          ,Point {x = -23, y = 42, z = 17}
+                          ,Point {x = -23, y = -17, z = 42}
+                          ,Point {x = -23, y = -42, z = -17}
+                          ,Point {x = 23, y = -17, z = -42}
+                          ,Point {x = 23, y = -42, z = 17}
+                          ,Point {x = 23, y = 17, z = 42}
+                          ,Point {x = 23, y = 42, z = -17}]
+
+    describe "findHomogen" $ do
+        it "find the first rotation to create an homogen translation of common points" $ do
+            let scanner0 = map point (sampleScanners !! 0)
+            let scanner1 = map point (sampleScanners !! 1)
+            let scanner4 = map point (sampleScanners !! 4)
+            let cps0_1 = sort $ commonPoints scanner0 scanner1 11
+            let firstCommon0_1 = cps0_1 !! 1
+            let fstc0_1 = fst firstCommon0_1
+            let sndc0_1 = snd firstCommon0_1
+            coords fstc0_1 `shouldBe` (-618,-824,-621)
+            coords sndc0_1 `shouldBe` (686,422,578)
+            let Just (t1,r1,l1) = findHomogen cps0_1
+            t1 `shouldBe` (68,-1246,-43)
+            r1 `shouldBe` [[-1,0,0],[0,1,0],[0,0,-1]]
+            l1 `shouldBe` 12 
+            translationT (coords fstc0_1) (coords (rotate sndc0_1 r1)) `shouldBe` (68,-1246,-43)
+            ((flip translate t1).(flip rotate r1)) sndc0_1 `shouldBe` fstc0_1 
+
+            let cps1_4 = commonPoints scanner1 scanner4 11
+            let firstCommon1_4 = cps1_4 !! 1
+            let fstc1_4 = fst firstCommon1_4
+            let sndc1_4 = snd firstCommon1_4
+            coords fstc1_4 `shouldBe` (-340,-569,-846)
+            coords sndc1_4 `shouldBe` (-258,-428,682)
+            let Just (t4,r4,l4) = findHomogen cps1_4
+            t4 `shouldBe` (88,113,-1104)
+            r4 `shouldBe` [[0,0,-1],[1,0,0],[0,-1,0]]
+            l4 `shouldBe` 12 
+
+
+            let cps1tr_4 = commonPoints (map ((flip translate t1) . (flip rotate r1)) scanner1) scanner4 11
+            let firstCommon1tr_4 = cps1tr_4 !! 1
+            let fstc1tr_4 = fst firstCommon1tr_4
+            let sndc1tr_4 = snd firstCommon1tr_4
+            coords fstc1tr_4 `shouldBe` (408,-1815,803)
+            coords sndc1tr_4 `shouldBe` (-258,-428,682)
+            let Just (t14,r14,l14) = findHomogen cps1tr_4
+            t14 `shouldBe` (-20,-1133,1061)
+            r14 `shouldBe` [[0,0,1],[-1,0,0],[0,-1,0]]
+            l14 `shouldBe` 12 
+
+    describe "findPosition" $ do
+        it "find the position and rotation of a scanner from a scanner" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            findPosition sample 0 0  `shouldBe` Just (Position {from = 0, to = 0, tr = (0,0,0), rot = [[1,0,0],[0,1,0],[0,0,1]], len = 25})
+    describe "findAllPositions" $ do
+        it "find all the relative positions of scanners" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            findAllPositions sample `shouldBe`
+                [Position {from = 0, to = 1, tr = (68,-1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]], len = 12}
+                ,Position {from = 1, to = 0, tr = (68,1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]], len = 12}
+                ,Position {from = 1, to = 3, tr = (160,-1134,-23), rot = [[1,0,0],[0,1,0],[0,0,1]], len = 12}
+                ,Position {from = 1, to = 4, tr = (88,113,-1104), rot = [[0,0,-1],[1,0,0],[0,-1,0]], len = 12}
+                ,Position {from = 2, to = 4, tr = (1125,-168,72), rot = [[0,1,0],[1,0,0],[0,0,-1]], len = 12}
+                ,Position {from = 3, to = 1, tr = (-160,1134,23), rot = [[1,0,0],[0,1,0],[0,0,1]], len = 12}
+                ,Position {from = 4, to = 1, tr = (-1104,-88,113), rot = [[0,1,0],[0,0,-1],[-1,0,0]], len = 12}
+                ,Position {from = 4, to = 2, tr = (168,-1125,72), rot = [[0,1,0],[1,0,0],[0,0,-1]], len = 12}]
+    describe "convert" $ do
+        it "given a scanner B position relative to a scanner A, convert a point from B to A" $ do 
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let poss = findAllPositions sample 
+            let (Just pos1) = find (\p -> from p == 0 && to p == 1) poss
+            let (Just pos4) = find (\p -> from p == 1 && to p == 4) poss
+            let pt0 = point (-618,-824,-621)
+            let pt00= point (459,-707,401)
+            let pt1 = point (686,422,578)
+            let pt4 = point (-660,-479,-426)
+            (convert pos1 pt1) `shouldBe` pt0 
+            (convert pos1 (convert pos4 pt4)) `shouldBe` pt00 
+    describe "acquire" $ do
+        it "given a position, convert all the point from target scanner to origin scanner" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let [p01,p10,p13,p14,p24,p31,p41,p42] = findAllPositions sample
+            length (sample!!0) `shouldBe` 25
+            length (sample!!1) `shouldBe` 25
+            length (commonPoints (sample!!0) (sample!!1) 11) `shouldBe` 12 
+            let sample' = acquire sample p01
+            length (sample'!!0) `shouldBe` 25 + 25 - 12
+
+    describe "acquire all" $ do
+        it "acquire convert for all positions until scanner 0 acquire no more points" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let sample' = acquireAll sample 
+            let l x = length (sample !! x)
+            map length sample `shouldBe` [25,25,26,25,26] 
+            
+            map length sample' `shouldBe` 
+                [l 0 + l 1 - 12
+                ,l 1 + l 0 - 12 + l 3 - 12 + l 4 - 12
+                ,0,0,0]
+
+            
+
+    describe "readScanners" $ do
+        it "convert lines into a list of scanners" $ do 
+            let input = ["--- scanner 0 ---"
+                        ,""
+                        ,"404,-588,-901"
+                        ,"528,-643,409"
+                        ,"-838,591,734"
+                        ,""
+                        ,"--- scanner 1 ---"
+                        ,""
+                        ,"553,345,-567"
+                        ,"474,580,667"
+                        ,"-447,-329,318"]
+            let scs = readScanners input
+            length scs  `shouldBe` 2 
+            head (head scs) `shouldBe` point (404,-588,-901)  
+            last (last scs) `shouldBe` point (-447,-329,318)
+
+        it "should read the puzzle data" $ do
+            content <- lines <$> readFile "test/Puzzle19Data.txt"
+            let puzzle = readScanners content
+            length puzzle `shouldBe` 34 
+            head (head puzzle) `shouldBe` point (562,-830,765) 
+            last (last puzzle) `shouldBe` point (682,-518,447) 
+        
+[Position {from = 0, to = 1, tr = (68,-1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]], len = 12}
+,Position {from = 1, to = 0, tr = (68,1246,-43), rot = [[-1,0,0],[0,1,0],[0,0,-1]], len = 12}
+,Position {from = 1, to = 3, tr = (160,-1134,-23), rot = [[1,0,0],[0,1,0],[0,0,1]], len = 12}
+,Position {from = 1, to = 4, tr = (88,113,-1104), rot = [[0,0,-1],[1,0,0],[0,-1,0]], len = 12}
+,Position {from = 2, to = 4, tr = (1125,-168,72), rot = [[0,1,0],[1,0,0],[0,0,-1]], len = 12}
+,Position {from = 3, to = 1, tr = (-160,1134,23), rot = [[1,0,0],[0,1,0],[0,0,1]], len = 12}
+,Position {from = 4, to = 1, tr = (-1104,-88,113), rot = [[0,1,0],[0,0,-1],[-1,0,0]], len = 12}
+,Position {from = 4, to = 2, tr = (168,-1125,72), rot = [[0,1,0],[1,0,0],[0,0,-1]], len = 12}]
+
+---
+
+type Signature = [Integer]
+type Scanner = [Point]
+type Coords = (Integer,Integer,Integer)
+type Length = Int
+
+data Point = Point { x :: Integer, y :: Integer, z :: Integer }
+    deriving (Eq,Show,Ord)
+
+type Rotation = [[Integer]]
+
+data Position = Position { from :: Int
+                         , to :: Int
+                         , tr :: Coords
+                         , rot :: Rotation
+                         , len :: Length }
+    deriving (Eq,Show,Ord)
+
+point :: Coords -> Point
+point (a,b,c) = Point { x = a, y = b, z = c }
+
+coords :: Point -> Coords
+coords (Point a b c) = (a,b,c)
+
+sq :: Integer -> Integer
+sq a = a * a
+
+distance :: Point -> Point -> Double 
+distance p1 p2 = sqrt ( dx2 + dy2 + dz2 )
+    where
+        dx2 = fromIntegral (square ( x p2 - x p1 ))
+        dy2 = fromIntegral (square ( y p2 - y p1 ))
+        dz2 = fromIntegral (square ( z p2 - z p1 ))
+        square a = a * a
+
+signature :: Point -> [Point] -> [Integer]
+signature pt = filter (>0) . sort . map (\p -> round ((pt `distance` p) * 10000)) 
+
+report :: Scanner -> [(Point,Signature)]
+report pts = map (\p -> (p, signature p pts)) pts
+
+commonPoints :: Scanner -> Scanner -> Int -> [(Point,Point)]
+commonPoints ps qs n = map (\(p,q,_) -> (p,q)) $ filter (\(_,_,s) -> length s >= n) $ [(p,q,common sp sq) | (p,sp) <- report ps, (q,sq) <- report qs]
+    where
+        common :: Signature -> Signature -> Signature
+        common s t = filter (\d -> d `elem` t) s
+
+commonPoints' :: Scanner -> Scanner -> [(Point,Point)]
+commonPoints' ps qs = map (\(p,q,_) -> (p,q)) $ filter (\(_,_,s) -> length s > 5) $ [(p,q,common sp sq) | (p,sp) <- report ps, (q,sq) <- report qs]
+    where
+        common :: Signature -> Signature -> Signature
+        common s t = filter (\d -> d `elem` t) s
+
+translation :: Point -> Point -> (Integer, Integer, Integer)
+translation (Point a b c) (Point d e f) = (a-d,b-e,c-f)
+
+translate :: Point -> Coords -> Point
+translate (Point a b c) (d,e,f) = Point (a+d) (b+e) (c+f)
+
+translate' = flip translate
+rotate' = flip rotate
+
+translateT :: Coords -> Coords -> Coords
+translateT (a,b,c) (d,e,f) = (a+d,b+e,c+e)
+
+translationT :: (Integer, Integer, Integer) -> (Integer, Integer, Integer) -> (Integer, Integer, Integer)
+translationT (a,b,c) (d,e,f) = (a-d,b-e,c-f)
+
+rotate :: Point -> Rotation -> Point
+rotate (Point a b c) [[d,e,f],[g,h,i],[j,k,l]] = Point m n o
+    where
+        m = a * d + b * g + c * j
+        n = a * e + b * h + c * k
+        o = a * f + b * i + c * l 
+
+rotateT :: Coords -> Rotation -> Coords
+rotateT (a,b,c) [[d,e,f],[g,h,i],[j,k,l]] = (m,n,o)
+    where
+        m = a * d + b * g + c * j
+        n = a * e + b * h + c * k
+        o = a * f + b * i + c * l 
+rotations = [[[ 1, 0, 0]
+             ,[ 0, 1, 0]
+             ,[ 0, 0, 1]]
+
+            ,[[ 1, 0, 0]
+             ,[ 0, 0,-1]
+             ,[ 0, 1, 0]]
+
+            ,[[ 1, 0, 0]
+             ,[ 0,-1, 0]
+             ,[ 0, 0,-1]]
+
+            ,[[ 1, 0, 0]
+             ,[ 0, 0, 1]
+             ,[ 0,-1, 0]]
+
+            ,[[ 0,-1, 0]
+             ,[ 1, 0, 0]
+             ,[ 0, 0, 1]]
+
+            ,[[ 0, 0, 1]
+             ,[ 1, 0, 0]
+             ,[ 0, 1, 0]]
+
+            ,[[ 0, 1, 0]
+             ,[ 1, 0, 0]
+             ,[ 0, 0,-1]]
+
+            ,[[ 0, 0,-1]
+             ,[ 1, 0, 0]
+             ,[ 0,-1, 0]]
+
+            ,[[ 1, 0, 0]
+             ,[ 0,-1, 0]
+             ,[ 0, 0, 1]]
+
+            ,[[-1, 0, 0]
+             ,[ 0, 0,-1]
+             ,[ 0,-1, 0]]
+
+            ,[[-1, 0, 0]
+             ,[ 0, 1, 0]
+             ,[ 0, 0,-1]]
+
+            ,[[-1, 0, 0]
+             ,[ 0, 0, 1]
+             ,[ 0, 1, 0]]
+
+            ,[[ 0, 1, 0]
+             ,[-1, 0, 0]
+             ,[ 0, 0, 1]]
+
+            ,[[ 0, 0, 1]
+             ,[-1, 0, 0]
+             ,[ 0,-1, 0]]
+
+            ,[[ 0,-1, 0]
+             ,[-1, 0, 0]
+             ,[ 0, 0,-1]]
+
+            ,[[ 0, 0,-1]
+             ,[-1, 0, 0]
+             ,[ 0, 1, 0]]
+
+            ,[[ 0, 0,-1]
+             ,[ 0, 1, 0]
+             ,[ 1, 0, 0]]
+
+            ,[[ 0, 1, 0]
+             ,[ 0, 0, 1]
+             ,[ 1, 0, 0]]
+
+            ,[[ 0, 0, 1]
+             ,[ 0,-1, 0]
+             ,[ 1, 0, 0]]
+
+            ,[[ 0,-1, 0]
+             ,[ 0, 0,-1]
+             ,[ 1, 0, 0]]
+
+            ,[[ 0, 0,-1]
+             ,[ 0,-1, 0]
+             ,[-1, 0, 0]]
+
+            ,[[ 0,-1, 0]
+             ,[ 0, 0, 1]
+             ,[-1, 0, 0]]
+
+            ,[[ 0, 0, 1]
+             ,[ 0, 1, 0]
+             ,[-1, 0, 0]]
+
+            ,[[ 0, 1, 0]
+             ,[ 0, 0,-1]
+             ,[-1, 0, 0]]]
+
+
+
+rotateCommonPoints :: [(Point,Point)] -> Rotation -> [(Point,Point)]
+rotateCommonPoints cps r = map (\(p,q) -> (p,rotate q r)) cps
+
+isHomogen :: ([(Point,Point)],Rotation) -> Bool
+isHomogen = (1==) . length . group . sort . map (uncurry translation) . fst
+
+findHomogen :: [(Point, Point)] -> Maybe (Coords,Rotation,Length)
+findHomogen cps = result <$> find isHomogen allRotatedCommonPoints
+    where 
+        allRotatedCommonPoints = map (\r -> (rotateCommonPoints cps r,r)) rotations
+        result :: ([(Point,Point)],Rotation) -> (Coords, Rotation, Length)
+        result (cps,r) = (uncurry translation (head cps),r,length cps)
+
+findPosition :: [Scanner] -> Int -> Int -> Maybe Position
+findPosition scs a b = result <$> findHomogen (commonPoints (scs!!a) (scs!!b) 11)
+    where
+        result (t,r,l) = Position { from = a, to = b, tr = t, rot = r, len=l }
+
+findAllPositions :: [Scanner] -> [Position]
+findAllPositions scs = catMaybes $ [findPosition scs a b | a <- [0..n], b <- [0..n], a /= b]
+    where n = length scs - 1
+
+readScanners :: [String] -> [Scanner]
+readScanners = map (map toPoint) . scannerGroups
+    where toPoint s = point (read ("("<>s<>")"))
+
+scannerGroups :: [String] -> [[String]]
+scannerGroups = filter (isCoord . head) . groupBy (\s t -> isCoord s == isCoord t)  
+    where  isCoord s = ',' `elem` s
+
+multiply :: Rotation -> Rotation -> Rotation
+multiply [[a11,a12,a13],[a21,a22,a23],[a31,a32,a33]] [[b11,b12,b13],[b21,b22,b23],[b31,b32,b33]] =
+    [[(a11 * b11) + (a12 * b21) + (a13 * b31),(a11 * b12) + (a12 * b22) + (a13 * b32),(a11 * b13) + (a12 * b23) + (a13 * b33)]
+    ,[(a21 * b11) + (a22 * b21) + (a23 * b31),(a21 * b12) + (a22 * b22) + (a23 * b32),(a21 * b13) + (a22 * b23) + (a23 * b33)]
+    ,[(a31 * b11) + (a32 * b21) + (a33 * b31),(a31 * b12) + (a32 * b22) + (a33 * b32),(a31 * b13) + (a32 * b23) + (a33 * b33)]]
+
+convert :: Position -> Point -> Point 
+convert (Position _ _ t r _) = (translate' t) . (rotate' r)
+
+acquire :: [Scanner] -> Position -> [Scanner]
+acquire scs p@(Position o s t r _) = replace scs o pts
+    where
+        pts = nub (sort (scs!!0 <> map (convert p) (scs!!s)))
+
+acquireAll :: [Scanner] -> [Scanner]
+acquireAll scs = foldl acquire scs (findAllPositions scs)
+
+replace [] _ _ = [] 
+replace (_:xs) 0 x = (x:xs)
+replace (x:xs) n t = x : replace xs (n-1) t
