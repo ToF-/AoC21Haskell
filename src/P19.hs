@@ -101,3 +101,16 @@ findPosition ps qs = case intersection ps qs of
         isHomogen :: [(Coord,Rotation)] -> Bool
         isHomogen = (1==) . L.length . L.group . L.sort . L.map fst
 
+acquire :: Scanner -> Scanner -> [Coord]
+acquire s t = case findPosition s t of
+                Nothing -> []
+                Just (tr,ro) -> L.nub (L.sort ((L.map coord s) <> (map convert (map coord t))))
+                    where
+                        convert = (translate tr) . (rotate ro) 
+
+acquireRange :: [Scanner] -> Int -> [Coord]
+acquireRange s i = L.nub (L.sort (L.concat [acquire (s!!i) (s!!j) | j <- [0..length s - 1], j /= i]))
+
+
+acquireAllRanges :: [Scanner] -> [[Coord]]
+acquireAllRanges scs = [acquireRange scs i | i <- [0..length scs-1]]

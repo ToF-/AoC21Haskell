@@ -48,3 +48,27 @@ spec = do
             sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
             findPosition (sample!!0) (sample!!1)  `shouldBe` Just ((68,-1246,-43),[[-1,0,0],[0,1,0],[0,0,-1]]) 
             (translate (68,-1246,-43) (rotate [[-1,0,0],[0,1,0],[0,0,-1]] (-336,658,858))) `shouldBe` (404,-588,-901) 
+        it "is nothing when one system has no common point to the other system" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            findPosition (sample!!0) (sample!!2) `shouldBe` Nothing 
+
+    describe "acquire" $ do
+        it "converts all the points of a scanner to a scanner within range" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let cs = acquire (sample!!0) (sample!!1)
+            length cs `shouldBe` length (sample!!0) + length (sample!!1) - length (intersection (sample!!0) (sample!!1))
+
+    describe "acquire range" $ do
+        it "converts all the points of scanners within range to origin scanner" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let cds = acquireRange sample 1
+            let ls x = length (sample !! x)
+            length cds `shouldBe` ls 0 + ls 1 + ls 3 + ls 4 - length (intersection (sample!!0) (sample!!1)) - length (intersection (sample!!1) (sample!!3)) - length (intersection (sample!!1) (sample!!4))
+
+    describe "acquire all ranges" $ do
+        it "converts all points of all scanners to scanners within range" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            let cdss = acquireAllRanges sample 
+            map length cdss `shouldBe` [38,65,40,38,53] 
+
+
