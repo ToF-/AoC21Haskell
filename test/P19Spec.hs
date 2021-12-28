@@ -70,5 +70,27 @@ spec = do
             sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
             let cdss = acquireAllRanges sample 
             map length cdss `shouldBe` [38,65,40,38,53] 
+            let sample' = map scan cdss
+            let cdss' = acquireAllRanges sample'
+            map length cdss'  `shouldBe` [79,79,79,79,79]
+            let sample'' = map scan cdss'
+            let cdss'' = acquireAllRanges sample''
+            map length cdss''  `shouldBe` [79,79,79,79,79]
+    describe "acquireAll" $ do
+        it "converts all points of all scanners until all have the same size" $ do
+            sample <- (readScanners . lines) <$> readFile "test/Sample19Data.txt"
+            map length (acquireAll sample) `shouldBe` [79,79,79,79,79] 
+        it "should solve the puzzle part 1" $ do
+            puzzle <- (readScanners . lines) <$> readFile "test/Puzzle19Data.txt"
+            let cdss = acquireAllRanges puzzle
+            map length cdss `shouldBe` 
+                [53,68,39,80,53,68,54,82,54,39,40,53,39,52,40,51,53,0,40,68,53,54,95,52,68,40,52,68,39,39,81,54,53,66 ]
+            let puzzle' = map scan cdss
+            let cdss' = acquireAllRanges puzzle'
+            map length cdss'  `shouldBe` [108,168,105,131,166,300,254,303,218,141,122,223,166,117,160,109,160,0,131,266,122,262,257,200,164,180,117,271,141,95,289,218,160,266]
+            let puzzle'' = map scan cdss'
+            let cdss'' = acquireAllRanges puzzle''
+            map length cdss''  `shouldBe` [414,414,414,414,414,414,414,414,414,414,414,414,414,414,414,401,414,0,414,414,414,414,414,414,414,414,414,414,414,373,414,414,414,414]
+
 
 

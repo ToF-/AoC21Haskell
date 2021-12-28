@@ -114,3 +114,9 @@ acquireRange s i = L.nub (L.sort (L.concat [acquire (s!!i) (s!!j) | j <- [0..len
 
 acquireAllRanges :: [Scanner] -> [[Coord]]
 acquireAllRanges scs = [acquireRange scs i | i <- [0..length scs-1]]
+
+acquireAll :: [Scanner] -> [[Coord]]
+acquireAll scs = if isHomogen cdss then cdss else acquireAll (L.map scan cdss)
+    where
+        cdss = acquireAllRanges scs
+        isHomogen = ((==) 1) . L.length . L.nub . L.sort . L.map length
