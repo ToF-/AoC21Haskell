@@ -1,14 +1,13 @@
 module P19
     where
 
-import qualified Data.List as L
-import qualified Data.Set as S
+import Data.List 
 import Data.Maybe
 
 data Point = Point { x :: Integer
                    , y :: Integer
                    , z :: Integer
-                   , distances :: S.Set Integer }
+                   , distances :: [Integer] }
     deriving (Eq,Ord,Show)
 
 type Distance = Integer
@@ -17,7 +16,7 @@ type Scanner = [Point]
 type Rotation = [[Integer]]
 
 point :: Coord -> Point
-point (a,b,c) = Point { x = a, y = b, z = c, distances = S.empty }
+point (a,b,c) = Point { x = a, y = b, z = c, distances = [] }
 
 coord :: Point -> Coord
 coord p = (x p, y p, z p)
@@ -31,18 +30,18 @@ distance p1 p2 = dx2 + dy2 + dz2
         square a = a * a
 
 scan :: [Coord] -> [Point] 
-scan cds = L.map setDistances pts
+scan cds = map setDistances pts
     where
         pts = map point cds
-        setDistances p = p { distances = S.fromList ds }
+        setDistances p = p { distances = ds }
             where
-                ds = L.map (p `distance`) pts
+                ds = map (p `distance`) pts
 
 readScanners :: [String] -> [Scanner]
-readScanners = L.map (scan . (L.map toCoord)) . scannerGroups
+readScanners = map (scan . (map toCoord)) . scannerGroups
     where 
         toCoord s = read ("("<>s<>")")
-        scannerGroups = L.filter (isCoord . head) . L.groupBy (\s t -> isCoord s == isCoord t)  
+        scannerGroups = filter (isCoord . head) . groupBy (\s t -> isCoord s == isCoord t)  
         isCoord s = ',' `elem` s
 
 rotate :: Rotation -> Coord -> Coord
@@ -88,7 +87,14 @@ translate :: Coord -> Coord -> Coord
 translate (x0,y0,z0) (x1,y1,z1) = (x0+x1,y0+y1,z0+z1)
 
 intersection :: Scanner -> Scanner -> [(Coord,Coord)]
-intersection ps qs = [(coord p, coord q) | p <- ps, q <- qs, S.size (distances p `S.intersection` distances q) >= 11]
+intersection ps qs = [(coord p, coord q) | p <- ps, q <- qs, (distances p `common` distances q) >= 11]
+
+common :: (Eq a, Ord a) => [a] -> [a] -> Int
+common as bs = common' 0 as bs
+    where
+        common' n [] _ = n
+        common' n (a:as) bs | a `elem` bs = common' (n+1) as (bs \\ [a])
+                            | otherwise =   common' n as bs
 
 findPosition :: Scanner -> Scanner -> Maybe (Coord,Rotation)
 findPosition ps qs = case intersection ps qs of
@@ -96,27 +102,20 @@ findPosition ps qs = case intersection ps qs of
                        pairs -> findPosition' pairs
     where 
         findPosition' :: [(Coord,Coord)] -> Maybe (Coord,Rotation)
-        findPosition' pairs = head <$> L.find isHomogen (map (\r -> [(translation p (rotate r q),r)| (p,q) <- pairs]) allRotations)
-
+        findPosition' pairs = head <$> find isHomogen (map (\r -> [(translation p (rotate r q),r)| (p,q) <- pairs]) allRotations)
         isHomogen :: [(Coord,Rotation)] -> Bool
-        isHomogen = (1==) . L.length . L.group . L.sort . L.map fst
+        isHomogen = (1==) . length . group . sort . map fst
+
+findPositions :: [Scanner] -> [((Int,Int),(Coord,Rotation))]
+findPositions scs = result $ [((i,j),findPosition (scs!!i) (scs!!j)) | i <- [0..n-1], j <- [0..n-1], i /= j] 
+    where 
+        n = length scs
+        result = map (\(a,b) -> (a,fromJust b)) . filter ((Nothing /=).snd)
 
 acquire :: Scanner -> Scanner -> [Coord]
 acquire s t = case findPosition s t of
                 Nothing -> []
-                Just (tr,ro) -> L.nub (L.sort ((L.map coord s) <> (map convert (map coord t))))
+                Just (tr,ro) -> nub (sort ((map coord s) <> (map convert (map coord t))))
                     where
                         convert = (translate tr) . (rotate ro) 
 
-acquireRange :: [Scanner] -> Int -> [Coord]
-acquireRange s i = L.nub (L.sort (L.concat [acquire (s!!i) (s!!j) | j <- [0..length s - 1], j /= i]))
-
-
-acquireAllRanges :: [Scanner] -> [[Coord]]
-acquireAllRanges scs = [acquireRange scs i | i <- [0..length scs-1]]
-
-acquireAll :: [Scanner] -> [[Coord]]
-acquireAll scs = if isHomogen cdss then cdss else acquireAll (L.map scan cdss)
-    where
-        cdss = acquireAllRanges scs
-        isHomogen = ((==) 1) . L.length . L.nub . L.sort . L.map length
